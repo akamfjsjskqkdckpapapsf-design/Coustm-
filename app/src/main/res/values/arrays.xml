@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- قائمة الثيمات للـ Spinner -->
+    <string-array name="themes_array">
+        <item>أسود (Black)</item>
+        <item>كحلي (Navy)</item>
+        <item>فيروزي (Teal)</item>
+        <item>رمادي (Grey)</item>
+        <item>أحمر (Red)</item>
+        <item>بنفسجي (Purple)</item>
+    </string-array>
+
+    <!-- قائمة أحجام الخط للـ Spinner -->
+    <string-array name="font_sizes_array">
+        <item>صغير</item>
+        <item>متوسط</item>
+        <item>كبير</item>
+        <item>كبير جداً</item>
+    </string-array>
+</resources>
