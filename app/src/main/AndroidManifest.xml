@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.customkeyboard">
 
     <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/sym_def_app_icon"
+        android:icon="@android:drawable/ic_dialog_info"
         android:label="لوحة التسطير الذكي"
+        android:supportsRtl="true"
         android:theme="@style/Theme.CustomKeyboard"
-        android:supportsRtl="true">
+        tools:targetApi="31">
 
         <activity
             android:name=".MainActivity"
@@ -34,5 +36,19 @@
                 android:resource="@xml/method" />
         </service>
 
+        <receiver
+            android:name=".MyInputMethodService$CommandReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="UPDATE_SPEED" />
+                <action android:name="UPDATE_WORDS_PER_LINE" />
+                <action android:name="START_TYPING" />
+                <action android:name="STOP_TYPING" />
+                <action android:name="TOGGLE_NEON" />
+                <action android:name="UPDATE_WORDS" />
+            </intent-filter>
+        </receiver>
+
     </application>
+
 </manifest>
