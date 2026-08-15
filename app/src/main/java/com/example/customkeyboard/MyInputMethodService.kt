@@ -5,6 +5,7 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -80,8 +81,8 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استدعاء دالة مساعدة لإرسال Enter
-                sendKeyEvent(10) // 10 هو رمز KEYCODE_ENTER
+                // استخدم الأرقام الثابتة مباشرة (لا KEYCODE_ENTER هنا)
+                sendEnterKey()
             }
             -3 -> switchToControlPanel()
             else -> {
@@ -91,10 +92,10 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         }
     }
 
-    private fun sendKeyEvent(keyCode: Int) {
-        // إنشاء حدث KeyEvent يدوياً باستخدام المنشئ المناسب
-        val downEvent = android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, keyCode)
-        val upEvent = android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, keyCode)
+    // دالة مساعدة لإرسال Enter باستخدام KeyEvent(0, 10) و KeyEvent(1, 10)
+    private fun sendEnterKey() {
+        val downEvent = KeyEvent(0, 10) // ACTION_DOWN, KEYCODE_ENTER
+        val upEvent = KeyEvent(1, 10)   // ACTION_UP, KEYCODE_ENTER
         currentInputConnection?.sendKeyEvent(downEvent)
         currentInputConnection?.sendKeyEvent(upEvent)
     }
@@ -154,7 +155,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        sendKeyEvent(10)
+                        sendEnterKey()
                         delay(typingSpeedMs)
                     }
                     currentIndex++
