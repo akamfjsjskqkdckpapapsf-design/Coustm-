@@ -9,7 +9,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
 import kotlinx.coroutines.*
 
@@ -33,7 +32,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     override fun onCreate() {
         super.onCreate()
         keyboard = Keyboard(this, R.xml.keyboard_layout_arabic)
-        // تحميل لوحة التحكم المصغرة
         controlPanelView = layoutInflater.inflate(R.layout.control_panel_overlay, null)
         setupControlPanelButtons()
     }
@@ -77,7 +75,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        // إذا كانت لوحة التحكم ظاهرة نعيد الكيبورد
         if (isControlPanelVisible) {
             switchToKeyboard()
         }
@@ -94,10 +91,11 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                // استخدم الأرقام الثابتة: ACTION_DOWN=0, ACTION_UP=1, KEYCODE_ENTER=10
+                currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
+                currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
             }
-            -3 -> { // الكود الخاص بزر ?123
+            -3 -> {
                 switchToControlPanel()
             }
             else -> {
@@ -114,8 +112,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     override fun swipeLeft() {}
     override fun swipeRight() {}
     override fun swipeUp() {}
-
-    // ================== دوال التحكم ==================
 
     fun updateWordList(newWords: List<String>) {
         wordList = newWords.toMutableList()
@@ -169,8 +165,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                        // استخدم الأرقام الثابتة لإرسال Enter
+                        currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
+                        currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
                         delay(typingSpeedMs)
                     }
 
@@ -199,8 +196,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         shuffledWords.clear()
         currentIndex = 0
     }
-
-    // ================== مستقبل البث (BroadcastReceiver) ==================
 
     inner class CommandReceiver : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
