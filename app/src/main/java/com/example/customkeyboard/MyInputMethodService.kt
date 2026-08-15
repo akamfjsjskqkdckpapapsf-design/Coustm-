@@ -8,6 +8,8 @@ import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.Toast
 import kotlinx.coroutines.*
 
@@ -15,6 +17,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
     private lateinit var keyboardView: KeyboardView
     private lateinit var keyboard: Keyboard
+    private lateinit var controlPanelView: View
 
     private var wordList: MutableList<String> = mutableListOf()
     private var shuffledWords: MutableList<String> = mutableListOf()
@@ -25,10 +28,14 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     private var isTypingActive: Boolean = false
     private var typingJob: Job? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var isControlPanelVisible: Boolean = false
 
     override fun onCreate() {
         super.onCreate()
         keyboard = Keyboard(this, R.xml.keyboard_layout_arabic)
+        // تحميل لوحة التحكم المصغرة
+        controlPanelView = layoutInflater.inflate(R.layout.control_panel_overlay, null)
+        setupControlPanelButtons()
     }
 
     override fun onCreateInputView(): View {
@@ -38,9 +45,42 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         return keyboardView
     }
 
+    private fun setupControlPanelButtons() {
+        val btnStart = controlPanelView.findViewById<Button>(R.id.btn_start_typing)
+        val btnStop = controlPanelView.findViewById<Button>(R.id.btn_stop_typing)
+        val btnSwitch = controlPanelView.findViewById<Button>(R.id.btn_switch_view)
+
+        btnStart.setOnClickListener {
+            startTyping()
+            Toast.makeText(applicationContext, "▶ بدأ التسطير", Toast.LENGTH_SHORT).show()
+        }
+
+        btnStop.setOnClickListener {
+            stopTyping()
+            Toast.makeText(applicationContext, "⏹ توقف التسطير", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSwitch.setOnClickListener {
+            switchToKeyboard()
+        }
+    }
+
+    private fun switchToControlPanel() {
+        isControlPanelVisible = true
+        setInputView(controlPanelView)
+    }
+
+    private fun switchToKeyboard() {
+        isControlPanelVisible = false
+        setInputView(keyboardView)
+    }
+
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        resetTypingState()
+        // إذا كانت لوحة التحكم ظاهرة نعيد الكيبورد
+        if (isControlPanelVisible) {
+            switchToKeyboard()
+        }
     }
 
     override fun onDestroy() {
@@ -50,12 +90,15 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
     override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
         when (primaryCode) {
-            -5 -> { // مفتاح المسح (delete)
+            Keyboard.KEYCODE_DELETE -> {
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
-            -4, 10 -> { // مفتاح Enter (الكود 10)
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
+            Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+            }
+            -3 -> { // الكود الخاص بزر ?123
+                switchToControlPanel()
             }
             else -> {
                 val char = primaryCode.toChar()
@@ -72,16 +115,21 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     override fun swipeRight() {}
     override fun swipeUp() {}
 
+    // ================== دوال التحكم ==================
+
     fun updateWordList(newWords: List<String>) {
         wordList = newWords.toMutableList()
         resetTypingState()
         mainHandler.post {
-            Toast.makeText(applicationContext, "تم استيراد ${wordList.size} كلمة فريدة", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "✅ تم استيراد ${wordList.size} كلمة", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun updateSpeed(speedMs: Long) {
         typingSpeedMs = speedMs.coerceIn(5, 150)
+        mainHandler.post {
+            Toast.makeText(applicationContext, "⚡ السرعة: $typingSpeedMs ملي", Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun updateWordsPerLine(count: Int) {
@@ -91,7 +139,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     fun startTyping() {
         if (wordList.isEmpty()) {
             mainHandler.post {
-                Toast.makeText(applicationContext, "الرجاء إدخال نصوص وحفظها أولاً", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "⚠️ الرجاء إدخال نصوص وحفظها أولاً", Toast.LENGTH_SHORT).show()
             }
             return
         }
@@ -105,32 +153,37 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         isTypingActive = true
 
         typingJob = CoroutineScope(Dispatchers.Main).launch {
-            while (isTypingActive && currentIndex < shuffledWords.size) {
-                val word = shuffledWords[currentIndex]
+            try {
+                while (isTypingActive && currentIndex < shuffledWords.size) {
+                    val word = shuffledWords[currentIndex]
 
-                for (char in word) {
+                    for (char in word) {
+                        if (!isTypingActive) break
+                        currentInputConnection?.commitText(char.toString(), 1)
+                        delay(typingSpeedMs + (5..20).random().toLong())
+                    }
+
                     if (!isTypingActive) break
-                    currentInputConnection?.commitText(char.toString(), 1)
-                    delay(typingSpeedMs + (5..20).random().toLong())
+
+                    currentInputConnection?.commitText(" ", 1)
+                    delay(typingSpeedMs / 2)
+
+                    if ((currentIndex + 1) % wordsPerLine == 0) {
+                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                        delay(typingSpeedMs)
+                    }
+
+                    currentIndex++
+
+                    if (currentIndex >= shuffledWords.size && isTypingActive) {
+                        shuffledWords = wordList.shuffled().toMutableList()
+                        currentIndex = 0
+                    }
                 }
-
-                if (!isTypingActive) break
-
-                currentInputConnection?.commitText(" ", 1)
-                delay(typingSpeedMs / 2)
-
-                if ((currentIndex + 1) % wordsPerLine == 0) {
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
-                    delay(typingSpeedMs)
-                }
-
-                currentIndex++
-
-                if (currentIndex >= shuffledWords.size && isTypingActive) {
-                    shuffledWords = wordList.shuffled().toMutableList()
-                    currentIndex = 0
-                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                isTypingActive = false
             }
         }
     }
@@ -147,26 +200,32 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         currentIndex = 0
     }
 
+    // ================== مستقبل البث (BroadcastReceiver) ==================
+
     inner class CommandReceiver : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
-            when (intent?.action) {
-                "UPDATE_SPEED" -> {
-                    val speed = intent.getIntExtra("VALUE", 80)
-                    updateSpeed(speed.toLong())
-                }
-                "UPDATE_WORDS_PER_LINE" -> {
-                    val count = intent.getIntExtra("VALUE", 6)
-                    updateWordsPerLine(count)
-                }
-                "START_TYPING" -> startTyping()
-                "STOP_TYPING" -> stopTyping()
-                "TOGGLE_NEON" -> {}
-                "UPDATE_WORDS" -> {
-                    val words = intent.getStringArrayListExtra("WORDS")
-                    if (words != null) {
-                        updateWordList(words)
+            try {
+                when (intent?.action) {
+                    "UPDATE_SPEED" -> {
+                        val speed = intent.getIntExtra("VALUE", 80)
+                        updateSpeed(speed.toLong())
+                    }
+                    "UPDATE_WORDS_PER_LINE" -> {
+                        val count = intent.getIntExtra("VALUE", 6)
+                        updateWordsPerLine(count)
+                    }
+                    "START_TYPING" -> startTyping()
+                    "STOP_TYPING" -> stopTyping()
+                    "TOGGLE_NEON" -> {}
+                    "UPDATE_WORDS" -> {
+                        val words = intent.getStringArrayListExtra("WORDS")
+                        if (words != null) {
+                            updateWordList(words)
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
