@@ -54,9 +54,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استخدام الرقم 66 بدلاً من KEYCODE_ENTER لتجنب أي خطأ مرجعي
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 66))
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 66))
+                // استخدم 10 وهو كود KeyEvent.KEYCODE_ENTER
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
             }
             else -> {
                 val char = primaryCode.toChar()
@@ -111,7 +111,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
                 for (char in word) {
                     if (!isTypingActive) break
-                    pressKey(char)
+                    currentInputConnection?.commitText(char.toString(), 1)
                     delay(typingSpeedMs + (5..20).random().toLong())
                 }
 
@@ -121,9 +121,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 delay(typingSpeedMs / 2)
 
                 if ((currentIndex + 1) % wordsPerLine == 0) {
-                    // استخدام الرقم 66 بدلاً من KEYCODE_ENTER
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 66))
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 66))
+                    // استخدم 10 بدلاً من KeyEvent.KEYCODE_ENTER
+                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
+                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
                     delay(typingSpeedMs)
                 }
 
@@ -149,10 +149,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         currentIndex = 0
     }
 
-    private fun pressKey(char: Char) {
-        currentInputConnection?.commitText(char.toString(), 1)
-    }
-
     inner class CommandReceiver : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
             when (intent?.action) {
@@ -166,7 +162,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 }
                 "START_TYPING" -> startTyping()
                 "STOP_TYPING" -> stopTyping()
-                "TOGGLE_NEON" -> { /* سيتم تنفيذه لاحقاً */ }
+                "TOGGLE_NEON" -> {}
                 "UPDATE_WORDS" -> {
                     val words = intent.getStringArrayListExtra("WORDS")
                     if (words != null) {
