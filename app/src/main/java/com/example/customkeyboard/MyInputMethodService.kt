@@ -5,6 +5,7 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -16,16 +17,15 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     private lateinit var keyboard: Keyboard
     private lateinit var controlPanelView: View
 
-    private var wordList: MutableList<String> = mutableListOf()
-    private var shuffledWords: MutableList<String> = mutableListOf()
-    private var currentIndex: Int = 0
-
-    private var typingSpeedMs: Long = 80L
-    private var wordsPerLine: Int = 6
-    private var isTypingActive: Boolean = false
+    private var wordList = mutableListOf<String>()
+    private var shuffledWords = mutableListOf<String>()
+    private var currentIndex = 0
+    private var typingSpeedMs = 80L
+    private var wordsPerLine = 6
+    private var isTypingActive = false
     private var typingJob: Job? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var isControlPanelVisible: Boolean = false
+    private var isControlPanelVisible = false
 
     override fun onCreate() {
         super.onCreate()
@@ -42,21 +42,15 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     }
 
     private fun setupControlPanelButtons() {
-        val btnStart = controlPanelView.findViewById<Button>(R.id.btn_start_typing)
-        val btnStop = controlPanelView.findViewById<Button>(R.id.btn_stop_typing)
-        val btnSwitch = controlPanelView.findViewById<Button>(R.id.btn_switch_view)
-
-        btnStart.setOnClickListener {
+        controlPanelView.findViewById<Button>(R.id.btn_start_typing).setOnClickListener {
             startTyping()
-            Toast.makeText(applicationContext, "بدأ التسطير", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "بدأ التسخير", Toast.LENGTH_SHORT).show()
         }
-
-        btnStop.setOnClickListener {
+        controlPanelView.findViewById<Button>(R.id.btn_stop_typing).setOnClickListener {
             stopTyping()
-            Toast.makeText(applicationContext, "توقف التسطير", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "توقف", Toast.LENGTH_SHORT).show()
         }
-
-        btnSwitch.setOnClickListener {
+        controlPanelView.findViewById<Button>(R.id.btn_switch_view).setOnClickListener {
             switchToKeyboard()
         }
     }
@@ -73,9 +67,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
     override fun onStartInput(attribute: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        if (isControlPanelVisible) {
-            switchToKeyboard()
-        }
+        if (isControlPanelVisible) switchToKeyboard()
     }
 
     override fun onDestroy() {
@@ -89,12 +81,10 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // بديل: إرسال سطر جديد باستخدام commitText
-                currentInputConnection?.commitText("\n", 1)
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
             }
-            -3 -> {
-                switchToControlPanel()
-            }
+            -3 -> switchToControlPanel() // ?123
             else -> {
                 val char = primaryCode.toChar()
                 currentInputConnection?.commitText(char.toString(), 1)
@@ -132,14 +122,11 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     fun startTyping() {
         if (wordList.isEmpty()) {
             mainHandler.post {
-                Toast.makeText(applicationContext, "الرجاء إدخال نصوص وحفظها أولاً", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "أدخل نصوصاً أولاً", Toast.LENGTH_SHORT).show()
             }
             return
         }
-
-        if (isTypingActive) {
-            stopTyping()
-        }
+        if (isTypingActive) stopTyping()
 
         shuffledWords = wordList.shuffled().toMutableList()
         currentIndex = 0
@@ -149,26 +136,22 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
             try {
                 while (isTypingActive && currentIndex < shuffledWords.size) {
                     val word = shuffledWords[currentIndex]
-
                     for (char in word) {
                         if (!isTypingActive) break
                         currentInputConnection?.commitText(char.toString(), 1)
                         delay(typingSpeedMs + (5..20).random().toLong())
                     }
-
                     if (!isTypingActive) break
 
                     currentInputConnection?.commitText(" ", 1)
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        // إرسال سطر جديد
-                        currentInputConnection?.commitText("\n", 1)
+                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
+                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
                         delay(typingSpeedMs)
                     }
-
                     currentIndex++
-
                     if (currentIndex >= shuffledWords.size && isTypingActive) {
                         shuffledWords = wordList.shuffled().toMutableList()
                         currentIndex = 0
@@ -208,10 +191,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     "START_TYPING" -> startTyping()
                     "STOP_TYPING" -> stopTyping()
                     "UPDATE_WORDS" -> {
-                        val words = intent.getStringArrayListExtra("WORDS")
-                        if (words != null) {
-                            updateWordList(words)
-                        }
+                        intent.getStringArrayListExtra("WORDS")?.let { updateWordList(it) }
                     }
                 }
             } catch (e: Exception) {
