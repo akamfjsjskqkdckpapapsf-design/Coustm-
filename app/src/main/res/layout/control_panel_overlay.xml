@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    لوحة التحكم المصغرة التي تظهر عند الضغط على زر "?123" في الكيبورد.
-    تصميمها مظلم مع حدود نيون خضراء وبنفسجية، وتحتوي على أزرار التحكم الثلاثة:
-    1. تسطير فريد (Start)
-    2. توقف (Stop)
-    3. الذهاب للأرقام / الكيبورد (Switch View)
--->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -17,7 +10,7 @@
     android:baselineAligned="false"
     android:gravity="center">
 
-    <!-- زر 1: تسطير فريد (نيون أخضر) -->
+    <!-- زر 1: تسطير فريد -->
     <Button
         android:id="@+id/btn_start_typing"
         android:layout_width="0dp"
@@ -31,7 +24,7 @@
         android:background="@drawable/button_control_green"
         android:stateListAnimator="@null" />
 
-    <!-- زر 2: توقف (نيون أحمر) -->
+    <!-- زر 2: توقف -->
     <Button
         android:id="@+id/btn_stop_typing"
         android:layout_width="0dp"
@@ -46,14 +39,14 @@
         android:background="@drawable/button_control_red"
         android:stateListAnimator="@null" />
 
-    <!-- زر 3: الذهاب للأرقام / الكيبورد (نيون بنفسجي) -->
+    <!-- زر 3: ?123 (مصحح) -->
     <Button
         android:id="@+id/btn_switch_view"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_weight="1"
         android:layout_marginStart="6dp"
-        android:text="?123"
+        android:text="\?123"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:textStyle="bold"
