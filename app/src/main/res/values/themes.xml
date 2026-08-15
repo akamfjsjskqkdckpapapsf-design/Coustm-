@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- الثيم الرئيسي للتطبيق (Dark Mode بلمسات نيون) -->
+    <style name="Theme.CustomKeyboard" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- الحالة الأساسية -->
+        <item name="colorPrimary">@color/neon_purple</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorSecondary">@color/neon_green</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- خلفيات -->
+        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:navigationBarColor">@color/background_dark</item>
+
+        <!-- ألوان النصوص والعناصر -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:colorAccent">@color/neon_green</item>
+        <item name="android:colorControlHighlight">@color/neon_purple</item>
+
+        <!-- إعدادات الكروت (CardView) -->
+        <item name="cardViewStyle">@style/CardViewDark</item>
+    </style>
+
+    <!-- ستايل مخصص للكروت الزجاجية الداكنة -->
+    <style name="CardViewDark" parent="CardView">
+        <item name="cardBackgroundColor">@color/card_dark</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">8dp</item>
+    </style>
+</resources>
