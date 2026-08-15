@@ -50,11 +50,10 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
     override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
         when (primaryCode) {
-            Keyboard.KEYCODE_DELETE -> {
+            -5 -> { // مفتاح المسح (delete)
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
-            Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استخدم 10 وهو كود KeyEvent.KEYCODE_ENTER
+            -4, 10 -> { // مفتاح Enter (الكود 10)
                 currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
                 currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
             }
@@ -121,7 +120,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 delay(typingSpeedMs / 2)
 
                 if ((currentIndex + 1) % wordsPerLine == 0) {
-                    // استخدم 10 بدلاً من KeyEvent.KEYCODE_ENTER
                     currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 10))
                     currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 10))
                     delay(typingSpeedMs)
