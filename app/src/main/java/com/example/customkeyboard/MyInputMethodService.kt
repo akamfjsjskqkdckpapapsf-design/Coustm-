@@ -5,7 +5,6 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.os.Handler
 import android.os.Looper
-import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -81,9 +80,8 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // الحل النهائي: استخدم KeyEvent(0, 10) بدلاً من KEYCODE_ENTER
-                currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
-                currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
+                // استدعاء دالة مساعدة لإرسال Enter
+                sendKeyEvent(10) // 10 هو رمز KEYCODE_ENTER
             }
             -3 -> switchToControlPanel()
             else -> {
@@ -91,6 +89,14 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.commitText(char.toString(), 1)
             }
         }
+    }
+
+    private fun sendKeyEvent(keyCode: Int) {
+        // إنشاء حدث KeyEvent يدوياً باستخدام المنشئ المناسب
+        val downEvent = android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, keyCode)
+        val upEvent = android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, keyCode)
+        currentInputConnection?.sendKeyEvent(downEvent)
+        currentInputConnection?.sendKeyEvent(upEvent)
     }
 
     override fun onPress(primaryCode: Int) {}
@@ -148,8 +154,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
-                        currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
+                        sendKeyEvent(10)
                         delay(typingSpeedMs)
                     }
                     currentIndex++
