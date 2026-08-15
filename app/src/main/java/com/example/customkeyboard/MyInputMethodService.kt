@@ -5,9 +5,7 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.os.Handler
 import android.os.Looper
-import android.view.KeyEvent
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.Toast
 import kotlinx.coroutines.*
@@ -50,12 +48,12 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
 
         btnStart.setOnClickListener {
             startTyping()
-            Toast.makeText(applicationContext, "▶ بدأ التسطير", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "بدأ التسطير", Toast.LENGTH_SHORT).show()
         }
 
         btnStop.setOnClickListener {
             stopTyping()
-            Toast.makeText(applicationContext, "⏹ توقف التسطير", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "توقف التسطير", Toast.LENGTH_SHORT).show()
         }
 
         btnSwitch.setOnClickListener {
@@ -73,7 +71,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         setInputView(keyboardView)
     }
 
-    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+    override fun onStartInput(attribute: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
         if (isControlPanelVisible) {
             switchToKeyboard()
@@ -91,9 +89,8 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استخدم الأرقام الثابتة: ACTION_DOWN=0, ACTION_UP=1, KEYCODE_ENTER=10
-                currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
-                currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
+                // بديل: إرسال سطر جديد باستخدام commitText
+                currentInputConnection?.commitText("\n", 1)
             }
             -3 -> {
                 switchToControlPanel()
@@ -117,14 +114,14 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         wordList = newWords.toMutableList()
         resetTypingState()
         mainHandler.post {
-            Toast.makeText(applicationContext, "✅ تم استيراد ${wordList.size} كلمة", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "تم استيراد ${wordList.size} كلمة", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun updateSpeed(speedMs: Long) {
         typingSpeedMs = speedMs.coerceIn(5, 150)
         mainHandler.post {
-            Toast.makeText(applicationContext, "⚡ السرعة: $typingSpeedMs ملي", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "السرعة: $typingSpeedMs ملي", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -135,7 +132,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     fun startTyping() {
         if (wordList.isEmpty()) {
             mainHandler.post {
-                Toast.makeText(applicationContext, "⚠️ الرجاء إدخال نصوص وحفظها أولاً", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "الرجاء إدخال نصوص وحفظها أولاً", Toast.LENGTH_SHORT).show()
             }
             return
         }
@@ -165,9 +162,8 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        // استخدم الأرقام الثابتة لإرسال Enter
-                        currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
-                        currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
+                        // إرسال سطر جديد
+                        currentInputConnection?.commitText("\n", 1)
                         delay(typingSpeedMs)
                     }
 
@@ -211,7 +207,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     }
                     "START_TYPING" -> startTyping()
                     "STOP_TYPING" -> stopTyping()
-                    "TOGGLE_NEON" -> {}
                     "UPDATE_WORDS" -> {
                         val words = intent.getStringArrayListExtra("WORDS")
                         if (words != null) {
