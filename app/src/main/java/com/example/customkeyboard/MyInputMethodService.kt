@@ -81,8 +81,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                // استخدام الأرقام الثابتة: 0 = ACTION_DOWN, 1 = ACTION_UP, 10 = KEYCODE_ENTER
+                currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
+                currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
             }
             -3 -> switchToControlPanel() // ?123
             else -> {
@@ -147,8 +148,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                        currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                        // استخدام الأرقام الثابتة لإرسال Enter
+                        currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
+                        currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
                         delay(typingSpeedMs)
                     }
                     currentIndex++
