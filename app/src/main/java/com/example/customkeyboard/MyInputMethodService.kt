@@ -81,7 +81,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // السطر 83: استخدم الأرقام الثابتة (0, 10) بدلاً من KEYCODE_ENTER
+                // استخدم KeyEvent(0, 10) بدلاً من KEYCODE_ENTER
                 currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
                 currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
             }
@@ -148,7 +148,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        // نفس الشيء هنا: استخدم الأرقام
                         currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
                         currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
                         delay(typingSpeedMs)
