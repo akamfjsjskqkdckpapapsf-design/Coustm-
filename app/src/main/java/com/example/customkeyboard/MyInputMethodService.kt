@@ -81,7 +81,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استخدم KeyEvent(0, 10) بدلاً من KEYCODE_ENTER
+                // الحل النهائي: استخدم KeyEvent(0, 10) بدلاً من KEYCODE_ENTER
                 currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
                 currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
             }
