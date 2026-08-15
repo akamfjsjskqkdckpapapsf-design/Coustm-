@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.customkeyboard">
+
+    <!-- ========== الأذونات الأساسية ========== -->
+    <!-- ضروري للوصول إلى الـ InputMethodService -->
+    <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+
+    <!-- ========== التطبيق ========== -->
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="لوحة التسطير الذكي"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CustomKeyboard"
+        tools:targetApi="31">
+
+        <!-- ========== النشاط الرئيسي ========== -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ========== خدمة الكيبورد المخصص (القلب النابض) ========== -->
+        <service
+            android:name=".MyInputMethodService"
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
+        </service>
+
+        <!-- ========== مستقبلات البث (Broadcast Receivers) للتحكم من الواجهة ========== -->
+        <!-- سيتم التعامل مع الأوامر داخل الخدمة مباشرة عبر BroadcastReceiver ديناميكي،
+             لكننا نعلنها هنا لضمان استقبال الأوامر حتى لو كانت الخدمة في الخلفية -->
+
+        <receiver
+            android:name=".MyInputMethodService$CommandReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="UPDATE_SPEED" />
+                <action android:name="UPDATE_WORDS_PER_LINE" />
+                <action android:name="START_TYPING" />
+                <action android:name="STOP_TYPING" />
+                <action android:name="TOGGLE_NEON" />
+                <action android:name="UPDATE_WORDS" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>
