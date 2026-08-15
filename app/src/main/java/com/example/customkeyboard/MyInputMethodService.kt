@@ -81,11 +81,11 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // استخدام الأرقام الثابتة: 0 = ACTION_DOWN, 1 = ACTION_UP, 10 = KEYCODE_ENTER
+                // السطر 83: استخدم الأرقام الثابتة (0, 10) بدلاً من KEYCODE_ENTER
                 currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
                 currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
             }
-            -3 -> switchToControlPanel() // ?123
+            -3 -> switchToControlPanel()
             else -> {
                 val char = primaryCode.toChar()
                 currentInputConnection?.commitText(char.toString(), 1)
@@ -148,7 +148,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                     delay(typingSpeedMs / 2)
 
                     if ((currentIndex + 1) % wordsPerLine == 0) {
-                        // استخدام الأرقام الثابتة لإرسال Enter
+                        // نفس الشيء هنا: استخدم الأرقام
                         currentInputConnection?.sendKeyEvent(KeyEvent(0, 10))
                         currentInputConnection?.sendKeyEvent(KeyEvent(1, 10))
                         delay(typingSpeedMs)
