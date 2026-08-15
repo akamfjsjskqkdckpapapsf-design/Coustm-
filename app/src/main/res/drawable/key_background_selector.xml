@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    محدد الخلفية لأزرار الكيبورد.
+    الحالة العادية: خلفية سوداء داكنة مع حدود نيون خضراء باهتة.
+    حالة الضغط (Pressed): خلفية سوداء مع توهج بنفسجي وحدود أكثر إشراقاً.
+    هذا يعطي انطباعاً بلمسات النيون المطلوبة مع الحفاظ على المظهر المظلم الأنيق.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- حالة الضغط -->
+    <item android:state_pressed="true">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="rectangle">
+            <solid android:color="#1A1A1A" />
+            <stroke
+                android:width="2dp"
+                android:color="#9D4EDD" />
+            <corners android:radius="6dp" />
+            <!-- توهج بنفسجي خفيف -->
+            <padding
+                android:bottom="2dp"
+                android:left="2dp"
+                android:right="2dp"
+                android:top="2dp" />
+        </shape>
+    </item>
+
+    <!-- الحالة العادية (غير مضغوط) -->
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android"
+            android:shape="rectangle">
+            <solid android:color="#2C2C2C" />
+            <stroke
+                android:width="1dp"
+                android:color="#00FF41" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+</selector>
