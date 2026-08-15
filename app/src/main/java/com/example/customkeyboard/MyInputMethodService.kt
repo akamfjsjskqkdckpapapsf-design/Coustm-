@@ -13,7 +13,6 @@ import kotlinx.coroutines.*
 
 class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardActionListener {
 
-    // ================== المحرك الأساسي ==================
     private lateinit var keyboardView: KeyboardView
     private lateinit var keyboard: Keyboard
 
@@ -27,7 +26,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     private var typingJob: Job? = null
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    // ================== دورة الحياة ==================
     override fun onCreate() {
         super.onCreate()
         keyboard = Keyboard(this, R.xml.keyboard_layout_arabic)
@@ -50,16 +48,15 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         stopTyping()
     }
 
-    // ================== KeyboardActionListener ==================
     override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
         when (primaryCode) {
             Keyboard.KEYCODE_DELETE -> {
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
             Keyboard.KEYCODE_DONE, Keyboard.KEYCODE_ENTER -> {
-                // إرسال Enter
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                // استخدام الرقم 66 بدلاً من KEYCODE_ENTER لتجنب أي خطأ مرجعي
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 66))
+                currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 66))
             }
             else -> {
                 val char = primaryCode.toChar()
@@ -76,7 +73,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
     override fun swipeRight() {}
     override fun swipeUp() {}
 
-    // ================== دوال التحكم ==================
     fun updateWordList(newWords: List<String>) {
         wordList = newWords.toMutableList()
         resetTypingState()
@@ -125,8 +121,9 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 delay(typingSpeedMs / 2)
 
                 if ((currentIndex + 1) % wordsPerLine == 0) {
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
-                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
+                    // استخدام الرقم 66 بدلاً من KEYCODE_ENTER
+                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, 66))
+                    currentInputConnection?.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, 66))
                     delay(typingSpeedMs)
                 }
 
@@ -156,7 +153,6 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
         currentInputConnection?.commitText(char.toString(), 1)
     }
 
-    // ================== مستقبل البث (BroadcastReceiver) ==================
     inner class CommandReceiver : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
             when (intent?.action) {
@@ -170,9 +166,7 @@ class MyInputMethodService : InputMethodService(), KeyboardView.OnKeyboardAction
                 }
                 "START_TYPING" -> startTyping()
                 "STOP_TYPING" -> stopTyping()
-                "TOGGLE_NEON" -> {
-                    // سيتم تنفيذ تأثير النيون لاحقاً
-                }
+                "TOGGLE_NEON" -> { /* سيتم تنفيذه لاحقاً */ }
                 "UPDATE_WORDS" -> {
                     val words = intent.getStringArrayListExtra("WORDS")
                     if (words != null) {
