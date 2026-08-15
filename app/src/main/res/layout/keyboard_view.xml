@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    تخطيط لوحة المفاتيح الذي سيتم عرضه داخل InputMethodService.
+    تم تصميمه ليكون شفافاً بالكامل مع خلفية سوداء مطفأة لمطابقة الثيم المظلم،
+    مع إمكانية إضافة أيقونات تحكم مستقبلاً.
+-->
+<android.inputmethodservice.KeyboardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/keyboard_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:background="#121212"
+    android:keyBackground="@drawable/key_background_selector"
+    android:keyTextColor="#FFFFFF"
+    android:keyTextSize="20sp"
+    android:shadowColor="#000000"
+    android:shadowRadius="2.0"
+    android:verticalCorrection="-12dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:keepScreenOn="false" />
